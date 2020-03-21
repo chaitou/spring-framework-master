@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+}
+
+group 'org.springframework'
+version '5.2.4.BUILD-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile(project(":spring-beans"))
+    compile(project(":spring-core"))
+    optional(project(":spring-aop"))
+    optional(project(":spring-context"))
+    optional(project(":spring-oxm"))
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
