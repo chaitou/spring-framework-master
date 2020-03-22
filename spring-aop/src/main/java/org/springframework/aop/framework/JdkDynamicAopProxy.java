@@ -180,7 +180,7 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 			}
 
 			Object retVal;
-
+			//- 目标对象内部调用是无法实现增强的，需要暴露代理
 			if (this.advised.exposeProxy) {
 				// Make invocation available if necessary.
 				oldProxy = AopContext.setCurrentProxy(proxy);
@@ -192,12 +192,12 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 			target = targetSource.getTarget();
 			Class<?> targetClass = (target != null ? target.getClass() : null);
 
-			// Get the interception chain for this method.
+			// Get the interception chain for this method. 获取拦截器链
 			List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
 
 			// Check whether we have any advice. If we don't, we can fallback on direct
 			// reflective invocation of the target, and avoid creating a MethodInvocation.
-			if (chain.isEmpty()) {
+			if (chain.isEmpty()) {//- 拦截器为空，直接调用切点方法
 				// We can skip creating a MethodInvocation: just invoke the target directly
 				// Note that the final invoker must be an InvokerInterceptor so we know it does
 				// nothing but a reflective operation on the target, and no hot swapping or fancy proxying.
@@ -205,10 +205,10 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 				retVal = AopUtils.invokeJoinpointUsingReflection(target, method, argsToUse);
 			}
 			else {
-				// We need to create a method invocation...
+				// We need to create a method invocation... 将拦截器封装到ReflectiveMethodInvocation
 				MethodInvocation invocation =
 						new ReflectiveMethodInvocation(proxy, target, method, args, targetClass, chain);
-				// Proceed to the joinpoint through the interceptor chain.
+				// Proceed to the joinpoint through the interceptor chain.//- 执行拦截器链
 				retVal = invocation.proceed();
 			}
 

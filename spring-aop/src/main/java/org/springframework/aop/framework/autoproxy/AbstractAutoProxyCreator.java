@@ -257,6 +257,12 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		// Create proxy here if we have a custom TargetSource.
 		// Suppresses unnecessary default instantiation of the target bean:
 		// The TargetSource will handle target instances in a custom fashion.
+		/**
+		 * 如果我们有自定义的TargetSource，请在此处创建代理。
+		 * 禁止不必要的目标bean默认实例化：
+		 * TargetSource将以自定义方式处理目标实例。
+		 */
+		//- 获取自定义TargetSource
 		TargetSource targetSource = getCustomTargetSource(beanClass, beanName);
 		if (targetSource != null) {
 			if (StringUtils.hasLength(beanName)) {
@@ -294,9 +300,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	@Override
 	public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
 		if (bean != null) {
-			Object cacheKey = getCacheKey(bean.getClass(), beanName);
+			Object cacheKey = getCacheKey(bean.getClass(), beanName);//- 缓存key，一般为beanClassName_beanName
 			if (this.earlyProxyReferences.remove(cacheKey) != bean) {
-				return wrapIfNecessary(bean, beanName, cacheKey);
+				return wrapIfNecessary(bean, beanName, cacheKey);//- bean如果有需要将会被AOP代理
 			}
 		}
 		return bean;
@@ -332,28 +338,28 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * @return a proxy wrapping the bean, or the raw bean instance as-is
 	 */
 	protected Object wrapIfNecessary(Object bean, String beanName, Object cacheKey) {
-		if (StringUtils.hasLength(beanName) && this.targetSourcedBeans.contains(beanName)) {
+		if (StringUtils.hasLength(beanName) && this.targetSourcedBeans.contains(beanName)) {//- 该bean已经处理过了，则直接返回
 			return bean;
 		}
-		if (Boolean.FALSE.equals(this.advisedBeans.get(cacheKey))) {
+		if (Boolean.FALSE.equals(this.advisedBeans.get(cacheKey))) {//- 无需被增强，也跳过
 			return bean;
 		}
-		if (isInfrastructureClass(bean.getClass()) || shouldSkip(bean.getClass(), beanName)) {
+		if (isInfrastructureClass(bean.getClass()) || shouldSkip(bean.getClass(), beanName)) {//- 如果该bean是基础类，或者指定了该bean不需要代理，则不进行代理，跳过
 			this.advisedBeans.put(cacheKey, Boolean.FALSE);
 			return bean;
 		}
 
 		// Create proxy if we have advice.
-		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
-		if (specificInterceptors != DO_NOT_PROXY) {
-			this.advisedBeans.put(cacheKey, Boolean.TRUE);
+		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);//- 获取增强方法
+		if (specificInterceptors != DO_NOT_PROXY) {//- 存在增强，则进行代理
+			this.advisedBeans.put(cacheKey, Boolean.TRUE);//- 缓存表明该bean需要被增强
 			Object proxy = createProxy(
-					bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
+					bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));//- 创建代理
 			this.proxyTypes.put(cacheKey, proxy.getClass());
 			return proxy;
 		}
 
-		this.advisedBeans.put(cacheKey, Boolean.FALSE);
+		this.advisedBeans.put(cacheKey, Boolean.FALSE);//- 缓存表明bean不需要被增强
 		return bean;
 	}
 

@@ -223,7 +223,7 @@ public abstract class AopUtils {
 	 */
 	public static boolean canApply(Pointcut pc, Class<?> targetClass, boolean hasIntroductions) {
 		Assert.notNull(pc, "Pointcut must not be null");
-		if (!pc.getClassFilter().matches(targetClass)) {
+		if (!pc.getClassFilter().matches(targetClass)) {//- 匹配class
 			return false;
 		}
 
@@ -307,7 +307,7 @@ public abstract class AopUtils {
 			return candidateAdvisors;
 		}
 		List<Advisor> eligibleAdvisors = new ArrayList<>();
-		for (Advisor candidate : candidateAdvisors) {
+		for (Advisor candidate : candidateAdvisors) {//- 处理引介增强
 			if (candidate instanceof IntroductionAdvisor && canApply(candidate, clazz)) {
 				eligibleAdvisors.add(candidate);
 			}
@@ -318,7 +318,7 @@ public abstract class AopUtils {
 				// already processed
 				continue;
 			}
-			if (canApply(candidate, clazz, hasIntroductions)) {
+			if (canApply(candidate, clazz, hasIntroductions)) {//- 处理普通bean
 				eligibleAdvisors.add(candidate);
 			}
 		}

@@ -84,7 +84,7 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 			Method aspectJAdviceMethod, AspectJAdvisorFactory aspectJAdvisorFactory,
 			MetadataAwareAspectInstanceFactory aspectInstanceFactory, int declarationOrder, String aspectName) {
 
-		this.declaredPointcut = declaredPointcut;
+		this.declaredPointcut = declaredPointcut;//- test()
 		this.declaringClass = aspectJAdviceMethod.getDeclaringClass();
 		this.methodName = aspectJAdviceMethod.getName();
 		this.parameterTypes = aspectJAdviceMethod.getParameterTypes();
@@ -110,7 +110,7 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 			// A singleton aspect.
 			this.pointcut = this.declaredPointcut;
 			this.lazy = false;
-			this.instantiatedAdvice = instantiateAdvice(this.declaredPointcut);
+			this.instantiatedAdvice = instantiateAdvice(this.declaredPointcut);//- 初始化Advice
 		}
 	}
 

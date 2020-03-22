@@ -168,7 +168,7 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 		if (interceptorOrInterceptionAdvice instanceof InterceptorAndDynamicMethodMatcher) {
 			// Evaluate dynamic method matcher here: static part will already have
 			// been evaluated and found to match.
-			InterceptorAndDynamicMethodMatcher dm =
+			InterceptorAndDynamicMethodMatcher dm =//- 动态匹配
 					(InterceptorAndDynamicMethodMatcher) interceptorOrInterceptionAdvice;
 			Class<?> targetClass = (this.targetClass != null ? this.targetClass : this.method.getDeclaringClass());
 			if (dm.methodMatcher.matches(this.method, targetClass, this.arguments)) {
@@ -177,7 +177,7 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 			else {
 				// Dynamic matching failed.
 				// Skip this interceptor and invoke the next in the chain.
-				return proceed();
+				return proceed();//- 不匹配，则跳过
 			}
 		}
 		else {
