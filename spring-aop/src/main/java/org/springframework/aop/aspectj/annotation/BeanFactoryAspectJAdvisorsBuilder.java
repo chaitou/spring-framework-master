@@ -83,25 +83,31 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 	public List<Advisor> buildAspectJAdvisors() {
 		List<String> aspectNames = this.aspectBeanNames;//- 获取Aspect切面的beanName
 
-		if (aspectNames == null) {//- 说明还没有缓存，需要从头遍历所有bean，找出注解了@Aspect的bean
+		// 说明还没有缓存，需要从头遍历所有bean，找出注解了@Aspect的bean
+		if (aspectNames == null) {
 			synchronized (this) {
 				aspectNames = this.aspectBeanNames;
 				if (aspectNames == null) {
 					List<Advisor> advisors = new ArrayList<>();
 					aspectNames = new ArrayList<>();
+					// 通过BeanFactory，也就是Ioc容器获取所有的beanName
 					String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
-							this.beanFactory, Object.class, true, false);//- 获取所有的beanName
-					for (String beanName : beanNames) {//- 循环所有beanName
-						if (!isEligibleBean(beanName)) {//- 不合法的bean直接跳过
+							this.beanFactory, Object.class, true, false);
+					// 循环所有beanName
+					for (String beanName : beanNames) {
+						// 不合法的bean直接跳过，规则由子类定义
+						if (!isEligibleBean(beanName)) {
 							continue;
 						}
 						// We must be careful not to instantiate beans eagerly as in this case they
 						// would be cached by the Spring container but would not have been weaved.
-						Class<?> beanType = this.beanFactory.getType(beanName);//- 获取bean类型
+						// 获取bean类型
+						Class<?> beanType = this.beanFactory.getType(beanName);
 						if (beanType == null) {
 							continue;
 						}
-						if (this.advisorFactory.isAspect(beanType)) {//- 该bean被Aspect注解
+						// 该bean被Aspect注解
+						if (this.advisorFactory.isAspect(beanType)) {
 							aspectNames.add(beanName);//- 缓存被Aspect注解的beanName
 							AspectMetadata amd = new AspectMetadata(beanType, beanName);
 							/**
@@ -112,14 +118,18 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 							if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) {
 								MetadataAwareAspectInstanceFactory factory =
 										new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
-								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);//- 解析增强方法
+								// 解析增强方法
+								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
 								if (this.beanFactory.isSingleton(beanName)) {
-									this.advisorsCache.put(beanName, classAdvisors);//- 如果bean是单例，则直接缓存增强方法
+									// 如果bean是单例，则直接缓存Advisor
+									this.advisorsCache.put(beanName, classAdvisors);
 								}
 								else {
-									this.aspectFactoryCache.put(beanName, factory);//- 不是单例的情况下，只能缓存工厂，每次都取增强都得新生产一个
+									// 不是单例的情况下，只能缓存工厂，每次都取增强都得新生产一个
+									this.aspectFactoryCache.put(beanName, factory);
 								}
-								advisors.addAll(classAdvisors);//- 添加增强
+								// 添加Advisor
+								advisors.addAll(classAdvisors);
 							}
 							else {
 								// Per target or per this.
@@ -145,13 +155,15 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 		}
 		List<Advisor> advisors = new ArrayList<>();
 		for (String aspectName : aspectNames) {
-			List<Advisor> cachedAdvisors = this.advisorsCache.get(aspectName);//- 从缓存中获取增强
+			// 从缓存中获取增强
+			List<Advisor> cachedAdvisors = this.advisorsCache.get(aspectName);
 			if (cachedAdvisors != null) {
-				advisors.addAll(cachedAdvisors);//- 加入到列表中
+				// 加入到列表中
+				advisors.addAll(cachedAdvisors);
 			}
 			else {
 				MetadataAwareAspectInstanceFactory factory = this.aspectFactoryCache.get(aspectName);
-				advisors.addAll(this.advisorFactory.getAdvisors(factory));//- 从工厂中获取增强
+				advisors.addAll(this.advisorFactory.getAdvisors(factory));
 			}
 		}
 		return advisors;

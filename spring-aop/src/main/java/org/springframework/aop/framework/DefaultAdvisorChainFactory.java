@@ -59,13 +59,16 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 		Class<?> actualClass = (targetClass != null ? targetClass : method.getDeclaringClass());
 		Boolean hasIntroductions = null;
 
+		// 循环所有切面
 		for (Advisor advisor : advisors) {
 			if (advisor instanceof PointcutAdvisor) {
 				// Add it conditionally.
 				PointcutAdvisor pointcutAdvisor = (PointcutAdvisor) advisor;
+				// 校验当前Advisor是否适用于当前对象
 				if (config.isPreFiltered() || pointcutAdvisor.getPointcut().getClassFilter().matches(actualClass)) {
 					MethodMatcher mm = pointcutAdvisor.getPointcut().getMethodMatcher();
 					boolean match;
+					// 校验Advisor是否应用到当前方法上
 					if (mm instanceof IntroductionAwareMethodMatcher) {
 						if (hasIntroductions == null) {
 							hasIntroductions = hasMatchingIntroductions(advisors, actualClass);
@@ -75,21 +78,26 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 					else {
 						match = mm.matches(method, actualClass);
 					}
+					// 匹配成功
 					if (match) {
+						// 从advisor中获取拦截器数组
 						MethodInterceptor[] interceptors = registry.getInterceptors(advisor);
 						if (mm.isRuntime()) {
 							// Creating a new object instance in the getInterceptors() method
 							// isn't a problem as we normally cache created chains.
 							for (MethodInterceptor interceptor : interceptors) {
+								// 添加动态拦截器
 								interceptorList.add(new InterceptorAndDynamicMethodMatcher(interceptor, mm));
 							}
 						}
 						else {
+							// 添加普通拦截器
 							interceptorList.addAll(Arrays.asList(interceptors));
 						}
 					}
 				}
 			}
+			// 引介增强
 			else if (advisor instanceof IntroductionAdvisor) {
 				IntroductionAdvisor ia = (IntroductionAdvisor) advisor;
 				if (config.isPreFiltered() || ia.getClassFilter().matches(actualClass)) {
@@ -97,6 +105,7 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 					interceptorList.addAll(Arrays.asList(interceptors));
 				}
 			}
+			// 其他类型的advisor
 			else {
 				Interceptor[] interceptors = registry.getInterceptors(advisor);
 				interceptorList.addAll(Arrays.asList(interceptors));

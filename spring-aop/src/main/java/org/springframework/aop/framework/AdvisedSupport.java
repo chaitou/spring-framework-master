@@ -194,6 +194,7 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
 	 */
 	public void setInterfaces(Class<?>... interfaces) {
 		Assert.notNull(interfaces, "Interfaces must not be null");
+		// 先清空再添加
 		this.interfaces.clear();
 		for (Class<?> ifc : interfaces) {
 			addInterface(ifc);
@@ -206,6 +207,7 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
 	 */
 	public void addInterface(Class<?> intf) {
 		Assert.notNull(intf, "Interface must not be null");
+		// 校验如果不是接口则抛出异常
 		if (!intf.isInterface()) {
 			throw new IllegalArgumentException("[" + intf.getName() + "] is not an interface");
 		}
@@ -256,6 +258,7 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
 	@Override
 	public void addAdvisor(int pos, Advisor advisor) throws AopConfigException {
 		if (advisor instanceof IntroductionAdvisor) {
+			// 校验引介增强
 			validateIntroductionAdvisor((IntroductionAdvisor) advisor);
 		}
 		addAdvisorInternal(pos, advisor);
@@ -362,6 +365,7 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
 			throw new IllegalArgumentException(
 					"Illegal position " + pos + " in advisor list with size " + this.advisors.size());
 		}
+		// 添加到advisor集合当中
 		this.advisors.add(pos, advisor);
 		updateAdvisorArray();
 		adviceChanged();
@@ -396,16 +400,20 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
 	@Override
 	public void addAdvice(int pos, Advice advice) throws AopConfigException {
 		Assert.notNull(advice, "Advice must not be null");
+
 		if (advice instanceof IntroductionInfo) {
 			// We don't need an IntroductionAdvisor for this kind of introduction:
 			// It's fully self-describing.
+			// 单独处理引介增强
 			addAdvisor(pos, new DefaultIntroductionAdvisor(advice, (IntroductionInfo) advice));
 		}
 		else if (advice instanceof DynamicIntroductionAdvice) {
 			// We need an IntroductionAdvisor for this kind of introduction.
+			// DynamicIntroductionAdvice只能作为IntroductionAdvisor的一部分
 			throw new AopConfigException("DynamicIntroductionAdvice may only be added as part of IntroductionAdvisor");
 		}
 		else {
+			// 普通增强
 			addAdvisor(pos, new DefaultPointcutAdvisor(advice));
 		}
 	}
@@ -477,10 +485,13 @@ public class AdvisedSupport extends ProxyConfig implements Advised {
 	 */
 	public List<Object> getInterceptorsAndDynamicInterceptionAdvice(Method method, @Nullable Class<?> targetClass) {
 		MethodCacheKey cacheKey = new MethodCacheKey(method);
+		// 从缓存中获取
 		List<Object> cached = this.methodCache.get(cacheKey);
 		if (cached == null) {
+			// 获取拦截器链
 			cached = this.advisorChainFactory.getInterceptorsAndDynamicInterceptionAdvice(
 					this, method, targetClass);
+			// 设置缓存
 			this.methodCache.put(cacheKey, cached);
 		}
 		return cached;

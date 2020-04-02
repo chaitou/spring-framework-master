@@ -504,7 +504,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			/**
 			 * 实例化前的后置处理器
 			 * 给BeanPostProcessors一个机会返回代理替换调真实的实例，主要是来执行实现了InstantiationAwareBeanPostProcessor接口的BeanPostProcessor
-			 * //- AOP核心方法，具体内容到AOP再解答 AOP代理时机 1. 当用户自定义TargetSource将会在实例化前进行代理，此时的TargetSource直接返回需要被代理的Bean，也就是说该被代理的Bean的实例化初始化操作均由自己负责。并进行短路操作 2. 用户不自定义TargetSource时则返回空，在初始化后才进行AOP代理
+			 *
+			 * 重点：
+			 * AOP代理时机 1. 当用户自定义TargetSource将会在实例化前进行代理，此时的TargetSource直接返回需要被代理的Bean，也就是说该被代理的Bean的实例化初始化操作均由自己负责。并进行短路操作
+			 * 2. 用户不自定义TargetSource时则返回空，在初始化后才进行AOP代理
 			 */
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
@@ -1172,7 +1175,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				// 确认当前beanName所要返回的最终类型
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
-					//- 只有前置处理返回的bean不为null, 才进行初始化后置处理(Aop的代理在初始化后置处理中进行) // 但是除非bean自定义了TargetSource，否则前置处理返回的bean为空 // 一般没有自定义TargetSource情况下，是不会在实例化前调用该后置处理，也不会导致后续短路操作！
+					// 只有前置处理返回的bean不为null, 才进行初始化后置处理(Aop的代理在初始化后置处理中进行)
+					// 但是除非bean自定义了TargetSource，否则前置处理返回的bean为空
+					// 一般没有自定义TargetSource情况下，是不会在实例化前调用该后置处理，也不会导致后续短路操作！
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
 					if (bean != null) {
 						// 实例化后置处理

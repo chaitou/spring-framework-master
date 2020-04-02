@@ -72,8 +72,8 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	@Nullable
 	protected Object[] getAdvicesAndAdvisorsForBean(
 			Class<?> beanClass, String beanName, @Nullable TargetSource targetSource) {
-
-		List<Advisor> advisors = findEligibleAdvisors(beanClass, beanName);//- 1. 获取所有增强 2. 在所有增强中挑选适用的增强
+		// 1. 获取所有增强 2. 在所有增强中挑选适用的增强
+		List<Advisor> advisors = findEligibleAdvisors(beanClass, beanName);
 		if (advisors.isEmpty()) {
 			return DO_NOT_PROXY;
 		}
@@ -91,10 +91,13 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 * @see #extendAdvisors
 	 */
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
-		List<Advisor> candidateAdvisors = findCandidateAdvisors();//- 获取所有增强
-		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);//- 在所有增强中寻找适用于该bean的增强
+		// 获取所有Advisor
+		List<Advisor> candidateAdvisors = findCandidateAdvisors();
+		// 在所有Advisor中寻找适用于该bean的Advisor
+		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
 		extendAdvisors(eligibleAdvisors);
 		if (!eligibleAdvisors.isEmpty()) {
+			// 对Advisor进行排序
 			eligibleAdvisors = sortAdvisors(eligibleAdvisors);
 		}
 		return eligibleAdvisors;
@@ -123,7 +126,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 
 		ProxyCreationContext.setCurrentProxiedBeanName(beanName);
 		try {
-			//- 匹配适用的advisors
+			// 匹配当前bean适用的advisors，只匹配到类，只有调用时JdkDynamicAopProxy.invoke才匹配到方法
 			return AopUtils.findAdvisorsThatCanApply(candidateAdvisors, beanClass);
 		}
 		finally {

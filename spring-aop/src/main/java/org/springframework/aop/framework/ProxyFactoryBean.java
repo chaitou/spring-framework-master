@@ -79,7 +79,7 @@ import org.springframework.util.ObjectUtils;
  * interception will work immediately on singletons (including existing references).
  * However, to change interfaces or target it's necessary to obtain a new instance
  * from the factory. This means that singleton instances obtained from the factory
- * do not have the same object identity. However, they do have the same interceptors
+ * do not have the same object identity. However, they do have the same interceptorsProxyFactory
  * and target, and changing any reference will change all objects.
  *
  * @author Rod Johnson
